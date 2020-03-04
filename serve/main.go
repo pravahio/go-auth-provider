@@ -28,14 +28,14 @@ func handleValidateAccessToken(w http.ResponseWriter, req *http.Request) {
 	raw, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Error(err)
-		w.Write([]byte(err.Error()))
+		w.Write(msgToJSON("error", err.Error()))
 		return
 	}
 
 	if provider.Validator.DecodeAndValidate(string(raw)) {
-		w.Write([]byte("VALID"))
+		w.Write(msgToJSON("error", "none"))
 	} else {
-		w.Write([]byte("NOT VALID"))
+		w.Write(msgToJSON("error", "Access token is not valid"))
 	}
 
 }
@@ -46,7 +46,7 @@ func handleGetToken(w http.ResponseWriter, req *http.Request) {
 	raw, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Error(err)
-		w.Write([]byte(err.Error()))
+		w.Write(msgToJSON("error", err.Error()))
 		return
 	}
 
@@ -54,20 +54,20 @@ func handleGetToken(w http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(raw, rq)
 	if err != nil {
 		log.Error(err)
-		w.Write([]byte(err.Error()))
+		w.Write(msgToJSON("error", err.Error()))
 		return
 	}
 
 	at, err := provider.TokenStore.GetAccessToken(rq)
 	if err != nil {
 		log.Error(err)
-		w.Write([]byte(err.Error()))
+		w.Write(msgToJSON("error", err.Error()))
 		return
 	} else {
 		rawJSON, err := json.Marshal(at)
 		if err != nil {
 			log.Error(err)
-			w.Write([]byte(err.Error()))
+			w.Write(msgToJSON("error", err.Error()))
 			return
 		} else {
 			w.Write([]byte(base64url.Encode(rawJSON)))
@@ -109,4 +109,8 @@ func main() {
 		log.Error(err)
 		return
 	}
+}
+
+func msgToJSON(key, val string) []byte {
+	return []byte("{\"" + key + "\": \"" + val + "\"}")
 }
