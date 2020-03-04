@@ -63,16 +63,15 @@ func handleGetToken(w http.ResponseWriter, req *http.Request) {
 		log.Error(err)
 		w.Write(msgToJSON("error", err.Error()))
 		return
-	} else {
-		rawJSON, err := json.Marshal(at)
-		if err != nil {
-			log.Error(err)
-			w.Write(msgToJSON("error", err.Error()))
-			return
-		} else {
-			w.Write([]byte(base64url.Encode(rawJSON)))
-		}
 	}
+
+	rawJSON, err := json.Marshal(at)
+	if err != nil {
+		log.Error(err)
+		w.Write(msgToJSON("error", err.Error()))
+		return
+	}
+	w.Write(msgToJSON("token", base64url.Encode(rawJSON)))
 }
 
 func main() {
