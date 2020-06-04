@@ -43,6 +43,8 @@ func handleValidateAccessToken(w http.ResponseWriter, req *http.Request) {
 func handleGetToken(w http.ResponseWriter, req *http.Request) {
 	log.Info("Servicing get token request")
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	raw, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Error(err)
@@ -63,16 +65,15 @@ func handleGetToken(w http.ResponseWriter, req *http.Request) {
 		log.Error(err)
 		w.Write(msgToJSON("error", err.Error()))
 		return
-	} else {
-		rawJSON, err := json.Marshal(at)
-		if err != nil {
-			log.Error(err)
-			w.Write(msgToJSON("error", err.Error()))
-			return
-		} else {
-			w.Write([]byte(base64url.Encode(rawJSON)))
-		}
 	}
+
+	rawJSON, err := json.Marshal(at)
+	if err != nil {
+		log.Error(err)
+		w.Write(msgToJSON("error", err.Error()))
+		return
+	}
+	w.Write(msgToJSON("token", base64url.Encode(rawJSON)))
 }
 
 func main() {
@@ -101,8 +102,8 @@ func main() {
 	// Start the server
 	err = http.ListenAndServeTLS(
 		os.Getenv("PRAVAH_AUTH_HOST")+":"+os.Getenv("PRAVAH_AUTH_PORT"),
-		os.Getenv("PRAVAH_AUTH_CERT_PATH"),
-		os.Getenv("PRAVAH_AUTH_KEY_PATH"),
+		os.Getenv("PRAVAH_AUTH_SERVER_CERT_PATH"),
+		os.Getenv("PRAVAH_AUTH_SERVER_KEY_PATH"),
 		nil,
 	)
 	if err != nil {
